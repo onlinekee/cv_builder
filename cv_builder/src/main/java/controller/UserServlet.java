@@ -75,6 +75,17 @@ public class UserServlet extends HttpServlet {
 				e.printStackTrace();
 			}
 			break;
+		case "/check_username":
+			try {
+				checkUsername(request, response);
+			} catch (SQLException e) {
+
+				e.printStackTrace();
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+			break;
 		case "/login":
 			showLoginView(request, response);
 			break;
@@ -84,7 +95,6 @@ public class UserServlet extends HttpServlet {
 		default:
 			try {
 				if (request.getSession().getAttribute("username") == null) {
-					System.out.println("null point");
 					response.sendRedirect("login");
 				} else {
 					response.sendRedirect("your_cvs");
@@ -115,58 +125,80 @@ public class UserServlet extends HttpServlet {
 			throws SQLException, IOException {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		User user = new User(username, password);
-		userDAO.insertUser(user);
-		response.sendRedirect("login");
+
+		PrintWriter out = response.getWriter();
+		JSONObject obj = new JSONObject();
+
+		if (userDAO.checkUsername(username)) {
+			obj.put("error", true);
+			obj.put("message", "Username already exist!");
+			out.println(obj.toJSONString());
+			out.flush();
+		} else {
+			User user = new User(username, password);
+			boolean result = userDAO.insertUser(user);
+
+			if (result) {
+				obj.put("error", false);
+				obj.put("message", "Registration Suceessfull!");
+				out.println(obj.toJSONString());
+				out.flush();
+			} else {
+				obj.put("error", true);
+				obj.put("message", "Registration Failed! please try again.");
+				out.println(obj.toJSONString());
+				out.flush();
+			}
+		}
+
+	}
+
+	private void checkUsername(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException {
+		String username = request.getParameter("username");
+
+		PrintWriter out = response.getWriter();
+
+		boolean exist = userDAO.checkUsername(username);
+
+		out.println(exist);
+		out.flush();
 	}
 
 	private void loginUser(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
-		System.out.println(username);
-		System.out.println(password);
 
 		PrintWriter out = response.getWriter();
 
 		User user = userDAO.loginUser(username, password);
 
-		String message;
-
 		HttpSession session = request.getSession();
 
+		JSONObject obj = new JSONObject();
+
 		if (user == null) {
-			System.out.println("Invalid Credintials");
 
-			message = "error";
-
-			JSONObject obj = new JSONObject();
-
-			obj.put("message", message);
-			obj.put("data", user);
+			obj.put("error", true);
+			obj.put("message", "Username and Password does not match!");
 
 			out.println(obj.toJSONString());
 			out.flush();
 		} else {
-			System.out.println("Login Success");
 
 			session.setAttribute("username", username);
 			session.setAttribute("password", password);
 
-			message = "success";
-
-			JSONObject obj = new JSONObject();
 			JSONObject userObj = new JSONObject();
 
 			userObj.put("user_id", user.getId());
 			userObj.put("username", user.getUsername());
 
-			obj.put("message", message);
+			obj.put("error", false);
+			obj.put("message", "Login Successful!");
 			obj.put("data", userObj);
 
 			out.println(obj.toJSONString());
-
-			System.out.println(obj.toJSONString());
-
 			out.flush();
 		}
 

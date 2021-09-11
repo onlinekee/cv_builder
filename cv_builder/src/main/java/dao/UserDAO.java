@@ -11,7 +11,7 @@ import model.User;
 
 /** This class provides database CRUD operations for User table **/
 public class UserDAO {
-	private static final String INSERT_USER = "INSERT INTO Users (username, password) VALUES (?, ?, ?)";
+	private static final String INSERT_USER = "INSERT INTO Users (username, password) VALUES (?, ?)";
 	private static final String SELECT_USER_BY_USERNAME = "SELECT *  from Users WHERE username = ?;";
 
 	public boolean insertUser(User user) {
@@ -22,40 +22,41 @@ public class UserDAO {
 
 			statement.setString(1, user.getUsername());
 			statement.setString(2, getHashedPassword(user.getPassword()));
-			
+
 			result = statement.executeUpdate() > 0;
-			System.out.println(result);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return result;
 	}
-	
+
 	public User loginUser(String username, String password) {
 		User user = null;
-		System.out.println(getHashedPassword(password));
+		String hashedPassword = getHashedPassword(password);
+
 		try {
 			user = getUserByUsername(username);
-			
-			
-			if(user == null) {
+
+			if (user == null) {
 				return null;
 			}
-			
-			if(getHashedPassword(password) == user.getPassword()) {
-				System.out.println("login user: "+user.getUsername());
+
+			if (hashedPassword.equals(user.getPassword())) {
+
 				return user;
+			} else if (hashedPassword != user.getPassword()) {
+				user = null;
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return user;
-		
-	
+
 	}
-	
+
 	public User getUserByUsername(String username) {
 		User user = null;
 		try {
@@ -64,22 +65,32 @@ public class UserDAO {
 
 			statement.setString(1, username);
 			ResultSet rs = statement.executeQuery();
-			
-			while(rs.next()) {
+
+			while (rs.next()) {
 				int id = rs.getInt("user_id");
 				String uName = rs.getString("username");
 				String pWord = rs.getString("password");
 				user = new User(id, uName, pWord);
-				
+
 			}
-			
-			
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		return user;
+	}
+
+	public boolean checkUsername(String username) {
+		boolean exist = false;
+
+		if (getUserByUsername(username) == null) {
+			exist = false;
+		} else {
+			exist = true;
+		}
+
+		return exist;
 	}
 
 	public String getHashedPassword(String password) {
