@@ -97,7 +97,7 @@ public class UserServlet extends HttpServlet {
 				if (request.getSession().getAttribute("username") == null) {
 					response.sendRedirect("login");
 				} else {
-					response.sendRedirect("your_cvs");
+					//response.sendRedirect("your_cvs");
 				}
 			} catch (Exception e) {
 
@@ -186,8 +186,8 @@ public class UserServlet extends HttpServlet {
 			out.flush();
 		} else {
 
+			session.setAttribute("userId", user.getId());
 			session.setAttribute("username", username);
-			session.setAttribute("password", password);
 
 			JSONObject userObj = new JSONObject();
 
@@ -208,6 +208,7 @@ public class UserServlet extends HttpServlet {
 		HttpSession session = request.getSession();
 
 		session.removeAttribute("username");
+		session.removeAttribute("userId");
 		session.invalidate();
 		response.sendRedirect("login");
 	}

@@ -20,12 +20,12 @@ function login() {
 			data: data,
 			dataType: 'JSON',
 			success: function(data) {
-				
+
 				if (data.error) {
 					$("#error").html(data.message);
 					$("#error").show();
 				} else {
-					window.location.replace("your_cvs");
+					window.location.replace("cv_list");
 				}
 			}
 		})
