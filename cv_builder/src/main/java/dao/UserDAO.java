@@ -17,6 +17,7 @@ public class UserDAO {
 	public boolean insertUser(User user) {
 		boolean result = false;
 		try {
+
 			Connection conn = DBConnection.getInstance();
 			PreparedStatement statement = conn.prepareStatement(INSERT_USER);
 
@@ -60,6 +61,7 @@ public class UserDAO {
 	public User getUserByUsername(String username) {
 		User user = null;
 		try {
+
 			Connection conn = DBConnection.getInstance();
 			PreparedStatement statement = conn.prepareStatement(SELECT_USER_BY_USERNAME);
 
